@@ -1,0 +1,12 @@
+.DS_Store
+**/.obsidian/plugins/
+
+**/*TEMP*/*
+**/*TMP*/*
+**/*temp*/*
+**/*tmp*/*
+*TEMP*.*
+*TMP*.*
+*temp*.*
+*tmp*.*
+
