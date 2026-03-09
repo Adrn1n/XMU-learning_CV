@@ -1,0 +1,15 @@
+[project]
+name = "XMU-learning_CV"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Exxon", email = "exxonliu001@yahoo.com"},
+]
+dependencies = ["opencv-python>=4.13.0.92"]
+requires-python = "==3.11.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
