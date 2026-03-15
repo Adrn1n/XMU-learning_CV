@@ -52,7 +52,7 @@ To effectively remove the noise while preserving the edges of the targets, we fi
 
 ### Features
 - The code will print a message if no files with the specified extensions are found in the input directory or if any file fails to process (`None` is returned by the `proc` function)
-- The label for each contour is placed at the centroid of the contour, which is calculated using image moments, but since there is no displacement applied, it's the top-left corner of the label text that is placed at the centroid
+- The label for each contour is placed at the centroid of the contour, which is calculated using image moments, but since there is no displacement applied, it's the bottom-left corner of the label text that is placed at the centroid
 - If the moments of a contour are zero (which can happen for very small contours), the label will be placed at coordinates (-1, -1), which is the bottom-right corner of the image
 - The count of contours is displayed at the top-left corner of the image, with the text "Count: " followed by the number of contours detected just as in the example image (the position is calculated so that the top-left corner of the count text is at (0, font_height), where font_height is the height of the text in pixels)
 
