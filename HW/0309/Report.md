@@ -3,7 +3,8 @@
 - Description: For a given set of noisy images, automatically detect the targets in the images using image enhancement and processing techniques, and output the number of targets along with their corresponding locations.
 
 - Example:
-    ![req_example](image.png)
+    - Original: ![req_example_org](1773587564_img01.jpg)
+    - Result: ![req_example_res](image.png)
 
 - Programming language: Python + OpenCV
 - Submission content: source code, results, report
@@ -56,7 +57,7 @@ To effectively remove the noise while preserving the edges of the targets, we fi
 - The count of contours is displayed at the top-left corner of the image, with the text "Count: " followed by the number of contours detected just as in the example image (the position is calculated so that the top-left corner of the count text is at (0, font_height), where font_height is the height of the text in pixels)
 
 ## Code
-```py
+```python
 import numpy as np
 import cv2
 from pathlib import Path
