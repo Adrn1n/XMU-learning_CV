@@ -4,7 +4,7 @@
 
 - Example:
     - Original: ![req_example_org](1773587564_img01.jpg)
-    - Result: ![req_example_res](image.png)
+    - Result: ![req_example_res](1773587564_img01(1).jpg)
 
 - Programming language: Python + OpenCV
 - Submission content: source code, results, report
