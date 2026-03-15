@@ -1,11 +1,9 @@
 # Report 1
 ## Requirements
 - Description: For a given set of noisy images, automatically detect the targets in the images using image enhancement and processing techniques, and output the number of targets along with their corresponding locations.
-
 - Example:
     - Original: ![req_example_org](1773587564_img01.jpg)
     - Result: ![req_example_res](1773587564_img01(1).jpg)
-
 - Programming language: Python + OpenCV
 - Submission content: source code, results, report
 
