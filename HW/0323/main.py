@@ -1,29 +1,262 @@
 import numpy as np
 import cv2
+from itertools import combinations
 from pathlib import Path
 
+RESIZE_MIN_SIDE = 720
+CLAHE_CLIP = 5.0
+CLAHE_GRID = (13, 13)
+GAUS_K_CANNY = (5, 5)
+GAUS_S_CANNY = 2.725
+CANNY_T1 = 0.725e4
+CANNY_T2 = 3.375e4
+CANNY_APT = 7
+MP_K0 = (7, 7)
+MP_IT0 = 1
+EDGE_MIN_BA = 2065
+MP_K1 = (5, 5)
+MP_IT1 = 3
+GAUS_K_HL = (25, 25)
+GAUS_S_HL = 1.125
+HL_OCT = 4
+HL_CTH = 4.5e-2
+HL_DTH = 1.175e-2
+HL_MC = 1325
+HL_NL = 4
+HL_FILTER_DIST = 16
+MAX_CORNERS = 75
+NMS_Q = 9.75e-2
+NMS_R = 50
+HAR_BS = 3
+HAR_K = 7.75e-2
+BORDER_C = (0, 255, 0)
+BORDER_THICK = 3
+QUAD_R = 12.5
+QUAD_OPA = 0.6
+A4_RATIO = 21 / 29.7
 EXTS = ("*.jpg",)
 
+DEBUG = True
+# DEBUG = False
+if DEBUG:
+    DEBUG_PATH = Path("debug/")
+    DEBUG_PATH.mkdir(exist_ok=True)
+    F_NAME = ""
+    F_EXT = ""
+    HL_C = (0, 255, 0)
+    CORN_R = 5
+    CORN_C = (0, 255, 0)
+    HULL_THICK = 3
+    HULL_C = (255, 0, 0)
 
-def cvrt2uint8(img):
-    if img.dtype == np.uint8:
-        return img
-    return cv2.convertScaleAbs(
-        cv2.normalize(img, np.zeros_like(img), 0, 255, cv2.NORM_MINMAX)
-    )
+
+def u8(img):
+    if img is not None and img.dtype != np.uint8:
+        img = cv2.convertScaleAbs(
+            cv2.normalize(img, np.zeros_like(img), 0, 255, cv2.NORM_MINMAX)
+        )
+    return img
 
 
 def pre_proc(img):
+    img = u8(img)
+    sc = 0
     if img is not None:
-        img = cvrt2uint8(img)
-    return None
+        sc = RESIZE_MIN_SIDE / min(img.shape[:2])
+        img = cv2.resize(
+            img,
+            (int(img.shape[1] * sc), int(img.shape[0] * sc)),
+            interpolation=cv2.INTER_AREA if sc < 1 else cv2.INTER_LINEAR,
+        )
+        img = cv2.createCLAHE(CLAHE_CLIP, CLAHE_GRID).apply(
+            img
+            if img.ndim == 2
+            else (
+                cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                if img.shape[2] == 3
+                else cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY) if img.ndim > 2 else img
+            )
+        )
+        if DEBUG:
+            cv2.imwrite(str(DEBUG_PATH / f"01_pre_{F_NAME}{F_EXT}"), img)
+    return img, sc
+
+
+def get_edge(gray):
+    canny = None
+    if gray is not None:
+        img = cv2.morphologyEx(
+            cv2.Canny(
+                cv2.GaussianBlur(gray, GAUS_K_CANNY, GAUS_S_CANNY),
+                CANNY_T1,
+                CANNY_T2,
+                apertureSize=CANNY_APT,
+                L2gradient=True,
+            ),
+            cv2.MORPH_CLOSE,
+            cv2.getStructuringElement(cv2.MORPH_RECT, MP_K0),
+            iterations=MP_IT0,
+        )
+        if DEBUG:
+            cv2.imwrite(str(DEBUG_PATH / f"02_canny_{F_NAME}{F_EXT}"), img)
+        if img.sum() > 0:
+            num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(img)
+            for i in range(1, num_labels):
+                if stats[i, cv2.CC_STAT_AREA] < EDGE_MIN_BA:
+                    img[labels == i] = 0
+            if DEBUG:
+                cv2.imwrite(str(DEBUG_PATH / f"03_clean_{F_NAME}{F_EXT}"), img)
+            if img.sum() > 0:
+                contours, _ = cv2.findContours(
+                    img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+                )
+                img = np.zeros_like(img)
+                for contour in contours:
+                    cv2.drawContours(img, [contour], -1, 255, thickness=1)
+                canny = cv2.morphologyEx(
+                    img,
+                    cv2.MORPH_CLOSE,
+                    cv2.getStructuringElement(cv2.MORPH_RECT, MP_K1),
+                    iterations=MP_IT1,
+                )
+                if DEBUG:
+                    cv2.imwrite(str(DEBUG_PATH / f"04_edge_{F_NAME}{F_EXT}"), canny)
+    return canny
+
+
+def get_quad(hull):
+    best_quad = None
+    max_area = 0
+    if hull is not None and len(hull) >= 4:
+        hull = hull.reshape(-1, 2)
+        for quad in combinations(hull, 4):
+            quad = np.array(quad)
+            area = cv2.contourArea(quad)
+            if area > max_area:
+                max_area = area
+                center = quad.mean(axis=0)
+                best_quad = quad[
+                    np.argsort(
+                        np.arctan2(quad[:, 1] - center[1], quad[:, 0] - center[0])
+                    )
+                ]
+    return best_quad, max_area
 
 
 def proc(path):
+    detected, scanned = None, None
     org_img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
-    if org_img is not None:
-        pre_proc(org_img.copy())
-    return None
+    pre_img, sc = pre_proc(org_img)
+    if pre_img is not None:
+        edge = get_edge(pre_img)
+        if edge is not None:
+            hl_pts = cv2.xfeatures2d.HarrisLaplaceFeatureDetector_create(
+                HL_OCT, HL_CTH, HL_DTH, HL_MC, HL_NL
+            ).detect(cv2.GaussianBlur(pre_img, GAUS_K_HL, GAUS_S_HL))
+            if DEBUG:
+                cv2.imwrite(
+                    str(DEBUG_PATH / f"05_hl_{F_NAME}{F_EXT}"),
+                    cv2.drawKeypoints(
+                        cv2.cvtColor(pre_img, cv2.COLOR_GRAY2BGR),
+                        hl_pts,
+                        None,
+                        HL_C,
+                        cv2.DrawMatchesFlags_DRAW_RICH_KEYPOINTS,
+                    ),
+                )
+            if hl_pts:
+                hl_mask = np.zeros_like(pre_img)
+                for pt in hl_pts:
+                    x, y = int(pt.pt[0]), int(pt.pt[1])
+                    r = int(pt.size / 2) + HL_FILTER_DIST
+                    cv2.circle(hl_mask, (x, y), r, 255, thickness=-1)
+                if DEBUG:
+                    cv2.imwrite(
+                        str(DEBUG_PATH / f"06_hl_mask_{F_NAME}{F_EXT}"), hl_mask
+                    )
+                corners = cv2.goodFeaturesToTrack(
+                    edge,
+                    MAX_CORNERS,
+                    NMS_Q,
+                    NMS_R,
+                    mask=hl_mask,
+                    blockSize=HAR_BS,
+                    useHarrisDetector=True,
+                    k=HAR_K,
+                )
+                if DEBUG:
+                    corner_img = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)
+                    if corners is not None:
+                        for c in corners:
+                            x, y = c.ravel()
+                            cv2.circle(corner_img, (int(x), int(y)), CORN_R, CORN_C, -1)
+                    cv2.imwrite(
+                        str(DEBUG_PATH / f"07_corners_{F_NAME}{F_EXT}"), corner_img
+                    )
+                if corners is not None and len(corners) >= 4:
+                    hull = cv2.convexHull(corners.reshape(-1, 2))
+                    if DEBUG:
+                        cv2.imwrite(
+                            str(DEBUG_PATH / f"08_hull_{F_NAME}{F_EXT}"),
+                            cv2.polylines(
+                                corner_img,
+                                [hull.astype(np.int32)],
+                                True,
+                                HULL_C,
+                                HULL_THICK,
+                            ),
+                        )
+                    if len(hull) >= 4:
+                        detected = org_img.copy()
+                        detected = (
+                            cv2.cvtColor(detected, cv2.COLOR_GRAY2BGR)
+                            if detected.ndim == 2
+                            else (
+                                detected
+                                if detected.shape[2] == 3
+                                else cv2.cvtColor(detected, cv2.COLOR_BGRA2BGR)
+                            )
+                        )
+                        quad, area = get_quad(hull)
+                        quad = (np.array(quad) / sc).astype(np.int32)
+                        cv2.polylines(
+                            detected,
+                            [quad],
+                            True,
+                            BORDER_C,
+                            int(BORDER_THICK / sc),
+                        )
+                        overlay = detected.copy()
+                        r = int(QUAD_R / sc)
+                        for i in range(len(quad)):
+                            p1 = quad[i]
+                            cv2.circle(overlay, tuple(p1), r, (255, 255, 255), -1)
+                            p2 = quad[(i + 1) % len(quad)]
+                            cv2.circle(
+                                overlay,
+                                ((p1[0] + p2[0]) // 2, (p1[1] + p2[1]) // 2),
+                                r,
+                                (255, 255, 255),
+                                -1,
+                            )
+                        detected = cv2.addWeighted(
+                            overlay, QUAD_OPA, detected, 1 - QUAD_OPA, 0
+                        )
+                        area = area / (sc**2)
+                        h = int(np.sqrt(area / A4_RATIO))
+                        w = int(h * A4_RATIO)
+                        scanned = cv2.warpPerspective(
+                            org_img,
+                            cv2.getPerspectiveTransform(
+                                np.array(quad, dtype=np.float32),
+                                np.array(
+                                    [[0, 0], [w, 0], [w, h], [0, h]],
+                                    dtype=np.float32,
+                                ),
+                            ),
+                            (w, h),
+                        )
+    return detected, scanned
 
 
 if __name__ == "__main__":
@@ -36,9 +269,12 @@ if __name__ == "__main__":
     if files:
         for f in files:
             name, ext = f.stem, f.suffix
-            res = proc(f)
-            if res is not None:
-                cv2.imwrite(str(out / f"{name}{ext}"), res)
+            if DEBUG:
+                F_NAME, F_EXT = name, ext
+            det, scn = proc(f)
+            if det is not None and scn is not None:
+                cv2.imwrite(str(out / f"{name}_detected{ext}"), det)
+                cv2.imwrite(str(out / f"{name}_scanned{ext}"), scn)
             else:
                 print(f"Failed to process {f}")
     else:
