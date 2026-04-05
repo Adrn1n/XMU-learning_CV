@@ -5,12 +5,45 @@ Take a photo of an A4 document, use corner detection, edge detection, etc., and 
 
 ## Implementation
 ### Methodology
+Real-world document scanning involves complex challenges: images are often taken in cluttered environments, document placement and orientation are arbitrary, lighting is uneven, and image resolutions vary significantly.
+
+To tackle these issues, our methodology relies on a robust pipeline:
+- Scale and Illumination Invariance: Since edge and corner detection algorithms depend heavily on kernel sizes and thresholds, we first resize the image so its shortest side equals a fixed value (720px). To handle uneven lighting and shadows, Contrast Limited Adaptive Histogram Equalization (CLAHE) is applied.
+- Robust Edge Extraction: To isolate the document from the complex background and text patterns, we apply Canny edge detection followed by morphological closing to ensure document boundaries are continuous. By extracting the largest connected component from the contours, we effectively filter out internal text and background noise.
+- High-Purity Corner Detection: Detecting corners directly on the raw image introduces too much noise, while detecting them solely on the closed edge map might yield false geometric corners. To solve this, we extract Harris-Laplace keypoints from the original pre-processed image to create a spatial mask, and then perform Harris corner detection on the edge map restricted by this mask.
+- Geometry Rectification: The document might be deformed or photographed at an angle. We compute the convex hull of the filtered corners and find the specific combination of 4 points that yields the maximum area. This ensures we capture the outermost boundaries of the document. Finally, assuming a standard A4 portrait orientation, we map these four points to a perfectly rectangular grid using perspective transformation.
 
 ### Overview
+```mermaid
+graph TD
+    In["Original Image"] --> |"resize, gray, CLAHE"| Pre["Pre-processed"]
+    Pre --> |"Gaussian, Canny, close, largest contour, close"| Edge["Edge Map"]
+    Pre --> |"Har-Lap"| HL["HL Mask"]
+    Edge --> |"Harris"| Co["Corner"]
+    HL --> |"mask"| Co
+    Co --> |"cvx hull"| H["Convex Hull"]
+    H --> |"argmax(S)"| O["A4 Doc"]
+```
 
 ### Parameters
+- `RESIZE_MIN_SIDE`: The fixed length to which the shorter side of the input image is resized for scale normalization
+- `CLAHE_CLIP` and `CLAHE_GRID`: Parameters for the CLAHE algorithm to enhance local contrast
+- `GAUS_K_CANNY`, `GAUS_S_CANNY`, `CANNY_T1`, `CANNY_T2`, `CANNY_APT`: Parameters for Gaussian blur and Canny edge detection
+- `MP_K0`, `MP_IT0`, `MP_K1`, `MP_IT1`: Parameters for morphological closing operations
+- `GAUS_K_HL`, `GAUS_S_HL`, `HL_OCT`, `HL_CTH`, `HL_DTH`, `HL_MC`, `HL_NL`: Parameters for Harris-Laplace keypoint detection
+- `HL_FILTER_DIST`: Distance threshold for filtering corners based on Harris-Laplace keypoints
+- `MAX_CORNERS`, `NMS_Q`, `NMS_R`, `HAR_BS`, `HAR_K`: Parameters for Harris corner detection and non-maximum suppression
+- `BORDER_C`, `BORDER_THICK`, `QUAD_R`, `QUAD_OPA`: Parameters for visualizing the detected quadrilateral
+- `A4_RATIO`: The aspect ratio of an A4 document (21:29.7)
+- `EXTS`: The tuple of file extensions to process
+- `DEBUG`: Flag to enable or disable debug image saving
+  - `DEBUG_PATH`, `F_NAME`, `F_EXT`: Parameters for debug image saving
+  - `HL_C`, `CORN_R`, `CORN_C`, `HULL_THICK`, `HULL_C`: Parameters for debug visualization of Harris-Laplace keypoints, corners, and convex hull
+
+All parameters are carefully tuned to achieve robust performance across a number of real-world document images while maintaining computational efficiency. The scale normalization ensures that the same parameter values can be applied consistently regardless of the input image resolution, and the combination of edge-based and keypoint-based corner detection significantly reduces false positives from text and background clutter.
 
 ### Features
+- The code will print a message if no files with the specified extensions are found in the input directory or if any file fails to process (`None` is returned by the `proc` function)
 
 ## Code
 ```python
