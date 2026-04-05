@@ -29,7 +29,6 @@ CANNY_T2 = 3.375e4
 CANNY_APT = 7
 MP_K0 = (7, 7)
 MP_IT0 = 1
-EDGE_MIN_BA = 2065
 MP_K1 = (5, 5)
 MP_IT1 = 3
 GAUS_K_HL = (25, 25)
@@ -40,7 +39,7 @@ HL_DTH = 1.175e-2
 HL_MC = 1325
 HL_NL = 4
 HL_FILTER_DIST = 16
-MAX_CORNERS = 75
+MAX_CORNERS = 10
 NMS_Q = 9.75e-2
 NMS_R = 50
 HAR_BS = 3
@@ -116,27 +115,26 @@ def get_edge(gray):
         if DEBUG:
             cv2.imwrite(str(DEBUG_PATH / f"02_canny_{F_NAME}{F_EXT}"), img)
         if img.sum() > 0:
-            num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(img)
-            for i in range(1, num_labels):
-                if stats[i, cv2.CC_STAT_AREA] < EDGE_MIN_BA:
-                    img[labels == i] = 0
+            contours, _ = cv2.findContours(
+                img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+            )
+            img = np.zeros_like(img)
+            for contour in contours:
+                cv2.drawContours(img, [contour], -1, 255, thickness=1)
             if DEBUG:
-                cv2.imwrite(str(DEBUG_PATH / f"03_clean_{F_NAME}{F_EXT}"), img)
-            if img.sum() > 0:
-                contours, _ = cv2.findContours(
-                    img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
-                )
-                img = np.zeros_like(img)
-                for contour in contours:
-                    cv2.drawContours(img, [contour], -1, 255, thickness=1)
-                canny = cv2.morphologyEx(
-                    img,
-                    cv2.MORPH_CLOSE,
-                    cv2.getStructuringElement(cv2.MORPH_RECT, MP_K1),
-                    iterations=MP_IT1,
-                )
-                if DEBUG:
-                    cv2.imwrite(str(DEBUG_PATH / f"04_edge_{F_NAME}{F_EXT}"), canny)
+                cv2.imwrite(str(DEBUG_PATH / f"03_contours_{F_NAME}{F_EXT}"), img)
+            _, labels, stats, _ = cv2.connectedComponentsWithStats(img)
+            img = (labels == np.argmax(stats[1:, cv2.CC_STAT_AREA]) + 1).astype(
+                np.uint8
+            ) * 255
+            canny = cv2.morphologyEx(
+                img,
+                cv2.MORPH_CLOSE,
+                cv2.getStructuringElement(cv2.MORPH_RECT, MP_K1),
+                iterations=MP_IT1,
+            )
+            if DEBUG:
+                cv2.imwrite(str(DEBUG_PATH / f"04_edge_{F_NAME}{F_EXT}"), canny)
     return canny
 
 
@@ -295,6 +293,7 @@ if __name__ == "__main__":
                 print(f"Failed to process {f}")
     else:
         print(f"No image files found in {inp.resolve()}")
+
 
 ```
 
