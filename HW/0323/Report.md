@@ -327,7 +327,6 @@ if __name__ == "__main__":
     else:
         print(f"No image files found in {inp.resolve()}")
 
-
 ```
 
 ## Results
