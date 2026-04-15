@@ -1,2 +1,4 @@
 output/
 debug/
+models/*
+!models/*.url
