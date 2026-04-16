@@ -15,6 +15,15 @@
 ### Methodology
 
 ### Overview
+```mermaid
+graph TD
+    Ga["Gallery"] --> |"YUNet Detection <br> AlignCrop + SFace Feature"| Dict["Gallery Feature Dictionary(Name: Feature)"]
+    In["Input"] --> |"YUNet Detection <br> AlignCrop + SFace Feature"| QF["Query Features"]
+    Dict & QF -.-> M(("Cosine Similarity <br> Best Match + Score"))
+    M --> |"score >= Threshold"| K["Label = Name <br> Green Box + Score"]
+    M --> |"score < Threshold"| U["Label = Unknown <br> Red Box + Score"]
+    K & U --> |"Draw Rectangle + Text"| Out["Output"]
+```
 
 ### Parameters
 
