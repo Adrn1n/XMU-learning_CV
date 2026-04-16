@@ -1,6 +1,6 @@
 # Report 3
 ## Requirements
-- Implement a complete face recognition program that can identify several dormitory classmates.
+- Implement a complete face recognition program that can identify several dormitory classmates
     - Face detection
     - Face feature extraction & comparison
 - Submission format: Python code + (2~3 page) report
