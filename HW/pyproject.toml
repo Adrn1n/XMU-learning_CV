@@ -5,7 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "Exxon", email = "exxonliu001@yahoo.com"},
 ]
-dependencies = ["opencv-python>=4.13.0.92", "opencv-contrib-python>=4.13.0.92"]
+dependencies = ["opencv-python>=4.13.0.92", "opencv-contrib-python>=4.13.0.92", "torch>=2.11.0", "torchsummary>=1.5.1", "torchvision>=0.26.0", "scikit-learn>=1.8.0", "numpy<2.4", "tqdm>=4.67.3"]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
