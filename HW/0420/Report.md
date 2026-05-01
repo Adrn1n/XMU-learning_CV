@@ -17,7 +17,7 @@ To facilitate the construction of the MLP and CNN architectures, two helper func
 - First layer: A linear layer that takes the flattened input image($32 \times 32 \times 3 = 3072$), and outputs 1024 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.5. The number of parameters for this layer is calculated as $3072 \times 1024 + 1024 = 3146752$.
 - Second layer: A linear layer that takes the 1024 features from the previous layer and outputs 512 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.5. The number of parameters for this layer is calculated as $1024 \times 512 + 512 = 524800$.
 - Third layer: A linear layer that takes the 512 features from the previous layer and outputs 256 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.3. The number of parameters for this layer is calculated as $512 \times 256 + 256 = 131328$.
-- Output layer: A linear layer that takes the 256 features from the previous layer and outputs 10 features corresponding to the 10 classes in the CIFAR-10 dataset, followed by an identity activation function. The number of parameters for this layer is calculated as $256 \times 10 + 10 = 2570$.
+- Output layer: A linear layer that takes the 256 features from the previous layer and outputs 10 features corresponding to the 10 classes in the CIFAR-10 dataset. The number of parameters for this layer is calculated as $256 \times 10 + 10 = 2570$.
 
 ### CNN
 - Feature extraction layers:
@@ -26,7 +26,7 @@ To facilitate the construction of the MLP and CNN architectures, two helper func
   - Third convolutional layer: A convolutional layer that takes the 64 feature maps from the previous layer and outputs 128 feature maps using a kernel size of 3 and padding of 1, followed by a ReLU activation function, and a max pooling layer with a kernel size of 2. Therefore the output is $128 \times [\frac{36 + 2 \times 1 - 3 + 1}{2}] \times [\frac{36 + 2 \times 1 - 3 + 1}{2}] = 128 \times 18 \times 18$. The number of parameters for this layer is calculated as $64 \times 128 \times 3 \times 3 + 128 = 73856$.
 - Classification layers:
   - First linear layer: A linear layer that takes the flattened output from the feature extraction layers (which has $128 \times 18 \times 18 = 41472$ features) and outputs 64 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.5. The number of parameters for this layer is calculated as $41472 \times 64 + 64 = 2654272$.
-  - Output layer: A linear layer that takes the 64 features from the previous layer and outputs 10 features corresponding to the 10 classes in the CIFAR-10 dataset, followed by an identity activation function. The number of parameters for this layer is calculated as $64 \times 10 + 10 = 650$.
+  - Output layer: A linear layer that takes the 64 features from the previous layer and outputs 10 features corresponding to the 10 classes in the CIFAR-10 dataset. The number of parameters for this layer is calculated as $64 \times 10 + 10 = 650$.
 
 ### Parameters
 - `DATA_DIR`: The directory where the CIFAR-10 dataset is stored or will be downloaded to
@@ -43,6 +43,11 @@ To facilitate the construction of the MLP and CNN architectures, two helper func
 - `CNN_NET`: The convolutional neural network architecture
 
 ### Features
+- If the number of epochs is less than or equal to `MAX_EPOCHS_PRINT`, the loss will be printed for every epoch. Otherwise, the loss will be printed for every `epochs // MAX_EPOCHS_PRINT` epochs.
+- The device is automatically selected based on availability (CUDA first, then XPU, then MPS, and finally CPU).
+- The number of layers for MLP is determined by the length of the input `dims` list (every input dimension and the last layer's output dimension), and every layer must have a corresponding activation function (can be `nn.Identity()` if no activation is desired) but dropout is optional (can be `None`). The length of `activations` can be less than the required length, in which case the last activation function will be used for the remaining layers. The same applies to `dropouts`.
+- The number of convolutional layers for CNN is determined by the length of the input `channels` list (every input channel and the last layer's output channel), and every layer must have a corresponding kernel size, padding (can be `0` if no padding is desired), and activation function (can be `nn.Identity()` if no activation is desired), but pooling is optional (can be `None`). The length of `kernel_sizes`, `paddings`, `activations`, and `poolings` can be less than the required length, in which case the last value will be used for the remaining layers. The classification layers are constructed the same way as MLP, with the same rules for activations and dropouts. But at least one classification layer is required. And the first layer's input dimension is omitted and its dropout must be specified (can't be `None`, but can be `0` if no dropout is desired).
+- If multiple classes have the same maximum output value during prediction, one of them will be randomly selected as the predicted class to avoid bias.
 
 ## Code
 ```python
