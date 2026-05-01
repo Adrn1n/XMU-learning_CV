@@ -13,6 +13,20 @@ To improve the model's generalization ability, the dataset is preprocessed by ca
 To facilitate the construction of the MLP and CNN architectures, two helper functions are implemented. These functions take in parameters such as layer dimensions, activation functions, dropout rates, kernel sizes, and pooling layers to construct the respective network architectures.
 
 ### Overview
+#### MLP
+- First layer: A linear layer that takes the flattened input image($32 \times 32 \times 3 = 3072$), and outputs 1024 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.5. The number of parameters for this layer is calculated as $3072 \times 1024 + 1024 = 3146752$.
+- Second layer: A linear layer that takes the 1024 features from the previous layer and outputs 512 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.5. The number of parameters for this layer is calculated as $1024 \times 512 + 512 = 524800$.
+- Third layer: A linear layer that takes the 512 features from the previous layer and outputs 256 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.3. The number of parameters for this layer is calculated as $512 \times 256 + 256 = 131328$.
+- Output layer: A linear layer that takes the 256 features from the previous layer and outputs 10 features corresponding to the 10 classes in the CIFAR-10 dataset, followed by an identity activation function. The number of parameters for this layer is calculated as $256 \times 10 + 10 = 2570$.
+
+### CNN
+- Feature extraction layers:
+  - First convolutional layer: A convolutional layer that takes the input image with 3 channels and $32 \times 32$ spatial dimensions, and outputs 32 feature maps using a kernel size of 3 and padding of 2, followed by a ReLU activation function, and no pooling. Therefore the output is $32 \times (32 + 2 \times 2 - 3 + 1) \times (32 + 2 \times 2 - 3 + 1) = 32 \times 34 \times 34$. The number of parameters for this layer is calculated as $3 \times 32 \times 3 \times 3 + 32 = 896$.
+  - Second convolutional layer: A convolutional layer that takes the 32 feature maps from the previous layer and outputs 64 feature maps using a kernel size of 5 and padding of 3, followed by a ReLU activation function, and no pooling. Therefore the output is $64 \times (34 + 2 \times 3 - 5 + 1) \times (34 + 2 \times 3 - 5 + 1) = 64 \times 36 \times 36$. The number of parameters for this layer is calculated as $32 \times 64 \times 5 \times 5 + 64 = 51264$.
+  - Third convolutional layer: A convolutional layer that takes the 64 feature maps from the previous layer and outputs 128 feature maps using a kernel size of 3 and padding of 1, followed by a ReLU activation function, and a max pooling layer with a kernel size of 2. Therefore the output is $128 \times [\frac{36 + 2 \times 1 - 3 + 1}{2}] \times [\frac{36 + 2 \times 1 - 3 + 1}{2}] = 128 \times 18 \times 18$. The number of parameters for this layer is calculated as $64 \times 128 \times 3 \times 3 + 128 = 73856$.
+- Classification layers:
+  - First linear layer: A linear layer that takes the flattened output from the feature extraction layers (which has $128 \times 18 \times 18 = 41472$ features) and outputs 64 features, followed by a ReLU activation function and a dropout layer with a dropout rate of 0.5. The number of parameters for this layer is calculated as $41472 \times 64 + 64 = 2654272$.
+  - Output layer: A linear layer that takes the 64 features from the previous layer and outputs 10 features corresponding to the 10 classes in the CIFAR-10 dataset, followed by an identity activation function. The number of parameters for this layer is calculated as $64 \times 10 + 10 = 650$.
 
 ### Parameters
 - `DATA_DIR`: The directory where the CIFAR-10 dataset is stored or will be downloaded to
