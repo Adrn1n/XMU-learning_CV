@@ -35,7 +35,7 @@ def get_device():
 
 DEVICE = get_device()
 OPT = optim.Adam
-EPOCHS = 1000
+EPOCHS = 500
 TRAIN_SET = datasets.CIFAR10(
     DATA_DIR,
     True,
@@ -51,7 +51,7 @@ TRAIN_SET = datasets.CIFAR10(
 )
 BATCH_SIZE = 512
 CRITERION = nn.CrossEntropyLoss()
-LR = 1e-5
+LR = 5e-5
 TEST_SET = datasets.CIFAR10(
     DATA_DIR,
     False,
@@ -88,8 +88,8 @@ def build_mlp(dims, activations, dropouts, flatten=True):
 
 
 mlp_dims = [img_size[0] * img_size[1] * img_size[2], 1024, 512, 256, len(classes)]
-mlp_activations = [nn.ReLU()]
-mlp_dropouts = [0.5, 0.5, 0.3]
+mlp_activations = [nn.ReLU()] * 3 + [nn.Identity()]
+mlp_dropouts = [0.5, 0.5, 0.3, None]
 MLP_NET = nn.Sequential(*build_mlp(mlp_dims, mlp_activations, mlp_dropouts))
 
 
@@ -142,8 +142,8 @@ cnn_padding_sizes = [2, 3, 1]
 cnn_activations = [nn.ReLU()]
 cnn_poolings = [None, None, nn.MaxPool2d(2)]
 cnn_mlp_dims = [64, len(classes)]
-cnn_mlp_activations = [nn.ReLU(), nn.ReLU()]
-cnn_mlp_dropouts = [0, 0.5]
+cnn_mlp_activations = [nn.ReLU(), nn.Identity()]
+cnn_mlp_dropouts = [0.5, None]
 CNN_NET = nn.Sequential(
     *build_cnn(
         cnn_channels,

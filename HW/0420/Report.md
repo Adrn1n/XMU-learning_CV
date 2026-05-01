@@ -6,6 +6,11 @@
 
 ## Implementation
 ### Methodology
+Both the multi-layer fully connected neural network (MLP) and the convolutional neural network (CNN) are neural networks designed for image classification tasks, and to compare their performance on the CIFAR-10 dataset, a shared framework is implemented using PyTorch. This framework handles data loading, model training, prediction, and evaluation, including accuracy calculation and confusion matrix generation. The two models share the same pipeline, while their architectures differ, which can be altered by changing the input parameters of the framework.
+
+To improve the model's generalization ability, the dataset is preprocessed by calculating the mean and standard deviation of the training data for normalization. In addition, data augmentation techniques such as random horizontal flipping and random cropping are applied to the training set.
+
+To facilitate the construction of the MLP and CNN architectures, two helper functions are implemented. These functions take in parameters such as layer dimensions, activation functions, dropout rates, kernel sizes, and pooling layers to construct the respective network architectures.
 
 ### Overview
 
@@ -64,7 +69,7 @@ def get_device():
 
 DEVICE = get_device()
 OPT = optim.Adam
-EPOCHS = 1000
+EPOCHS = 500
 TRAIN_SET = datasets.CIFAR10(
     DATA_DIR,
     True,
@@ -80,7 +85,7 @@ TRAIN_SET = datasets.CIFAR10(
 )
 BATCH_SIZE = 512
 CRITERION = nn.CrossEntropyLoss()
-LR = 1e-5
+LR = 5e-5
 TEST_SET = datasets.CIFAR10(
     DATA_DIR,
     False,
@@ -117,8 +122,8 @@ def build_mlp(dims, activations, dropouts, flatten=True):
 
 
 mlp_dims = [img_size[0] * img_size[1] * img_size[2], 1024, 512, 256, len(classes)]
-mlp_activations = [nn.ReLU()]
-mlp_dropouts = [0.5, 0.5, 0.3]
+mlp_activations = [nn.ReLU()] * 3 + [nn.Identity()]
+mlp_dropouts = [0.5, 0.5, 0.3, None]
 MLP_NET = nn.Sequential(*build_mlp(mlp_dims, mlp_activations, mlp_dropouts))
 
 
@@ -171,8 +176,8 @@ cnn_padding_sizes = [2, 3, 1]
 cnn_activations = [nn.ReLU()]
 cnn_poolings = [None, None, nn.MaxPool2d(2)]
 cnn_mlp_dims = [64, len(classes)]
-cnn_mlp_activations = [nn.ReLU(), nn.ReLU()]
-cnn_mlp_dropouts = [0, 0.5]
+cnn_mlp_activations = [nn.ReLU(), nn.Identity()]
+cnn_mlp_dropouts = [0.5, None]
 CNN_NET = nn.Sequential(
     *build_cnn(
         cnn_channels,
@@ -288,8 +293,7 @@ if __name__ == "__main__":
               ReLU-9                  [-1, 256]               0
           Dropout-10                  [-1, 256]               0
            Linear-11                   [-1, 10]           2,570
-             ReLU-12                   [-1, 10]               0
-          Dropout-13                   [-1, 10]               0
+         Identity-12                   [-1, 10]               0
 ================================================================
 Total params: 3,805,450
 Trainable params: 3,805,450
@@ -300,18 +304,19 @@ Forward/backward pass size (MB): 0.06
 Params size (MB): 14.52
 Estimated Total Size (MB): 14.59
 ----------------------------------------------------------------
-MLP Test Accuracy: 0.571700
+
+MLP Test Accuracy: 0.598600
 MLP Confusion Matrix:
- [[653  48  20  14  26   6  19  22 102  90]
- [ 20 695  10   7   5   3  13   9  40 198]
- [104  24 367  87  89  74 105  82  19  49]
- [ 57  23  53 398  46 171  82  80  19  71]
- [ 42  19  86  60 419  51 101 168  26  28]
- [ 20  18  55 209  48 433  51 107  16  43]
- [  9  25  37 106  61  39 647  26   9  41]
- [ 28  14  18  45  44  45  15 719  12  60]
- [ 89  82   3   7  31   3   3  12 674  96]
- [ 32 142  11  18   8   6   9  33  29 712]]
+ [[630  35  30  17  43   5  23  21 113  83]
+ [ 17 672   6  12   6   3  18   6  43 217]
+ [ 77  16 358  94 122  79 122  82  16  34]
+ [ 22  13  43 439  68 184 103  61  18  49]
+ [ 36   8  71  70 483  44 123 127  20  18]
+ [  8   7  39 240  61 473  46  88  15  23]
+ [  9  16  35  83  50  29 723  18  10  27]
+ [ 13   6  17  51  76  46  17 721  10  43]
+ [ 75  57   4  20  25   5   6   6 731  71]
+ [ 27 100   8  17  11   6  15  22  38 756]]
 ```
 
 ### CNN
@@ -331,8 +336,7 @@ MLP Confusion Matrix:
              ReLU-10                   [-1, 64]               0
           Dropout-11                   [-1, 64]               0
            Linear-12                   [-1, 10]             650
-             ReLU-13                   [-1, 10]               0
-          Dropout-14                   [-1, 10]               0
+         Identity-13                   [-1, 10]               0
 ================================================================
 Total params: 2,780,938
 Trainable params: 2,780,938
@@ -343,16 +347,17 @@ Forward/backward pass size (MB): 5.00
 Params size (MB): 10.61
 Estimated Total Size (MB): 15.62
 ----------------------------------------------------------------
-CNN Test Accuracy: 0.685700
+
+CNN Test Accuracy: 0.786700
 CNN Confusion Matrix:
- [[782  13  38  14  13   9  14   1  73  43]
- [ 17 837   8  12   2   6   8   0  26  84]
- [ 53   7 674  61  67  56  53   0  16  13]
- [ 25   9  77 577  51 168  61   0  16  16]
- [ 17   5  82  57 699  37  71   4  23   5]
- [ 15   4  60 152  40 681  28   1  11   8]
- [  5   5  55  56  20  25 819   1   8   6]
- [ 69  52 121 130 190 200  57  47  38  96]
- [ 39  25  16   8   2   4   3   0 880  23]
- [ 30  36   8  21   2   8   7   0  27 861]]
+ [[822  25  35  14  12   4   5   8  54  21]
+ [ 14 898   3   7   1   2   3   0  12  60]
+ [ 55   1 653  67  77  53  60  19   8   7]
+ [ 13   4  46 610  34 203  49  15  14  12]
+ [ 13   3  58  59 716  41  47  49  13   1]
+ [  7   3  35 138  34 750  15  15   0   3]
+ [  4   3  42  61  13  20 849   5   1   2]
+ [ 14   1  24  24  36  76   5 810   0  10]
+ [ 50  20   4   5   4   5   3   1 893  15]
+ [ 21  54   3   9   1   3   5   9  29 866]]
 ```
