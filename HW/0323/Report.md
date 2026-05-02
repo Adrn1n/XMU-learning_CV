@@ -1,3 +1,21 @@
+<!--
+编程作业2：文档扫描
+ 若学生多次提交作业，成绩计算请以评分规则为准
+作业内容我的作业
+是否计入总成绩 否公布成绩时间 马上公布活动时间 结束于2026.04.03 23:59作业形式 个人作业计分规则 最高得分完成指标 提交作业
+评分方式
+(
+教师评阅 100.0%
+)
+ 教师评阅占成绩比例 100.0%
+作业说明
+拍一张A4纸文稿的图片，利用角点检测、边缘检测等，再通过投影变换完成对文档的对齐扫描。
+
+注：A4规格为21cm×29.7cm
+
+Clipboard Image.png
+(https://lnt.xmu.edu.cn/api/uploads/10931613/in-rich-content?created_at=2026-03-18T11:07:46Z, 1775319981_Clipboard Image.png)
+-->
 # Report 2
 ## Requirements
 Take a photo of an A4 document, use corner detection, edge detection, etc., and then complete the alignment scanning of the document through perspective transformation.

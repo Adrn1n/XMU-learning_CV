@@ -1,3 +1,36 @@
+<!--
+编程作业1：目标检测与计数
+作业内容我的作业
+是否计入总成绩 是（成绩类别 : 平时成绩）公布成绩时间 不公布活动时间 结束于2026.03.21 23:59作业形式 个人作业计分规则 最后一次给分完成指标 提交作业
+评分方式
+(
+教师评阅 100.0%
+)
+ 教师评阅占成绩比例 100.0%
+作业说明
+作业说明：给定一组存在噪声的图像，通过图像增强与处理技术，自动检测图像中的目标，并输出目标数量及绘制对应的位置。
+
+示例：
+
+输入图片Image
+(https://lnt.xmu.edu.cn/api/uploads/10442634/in-rich-content?created_at=2026-03-07T10:54:18Z, 1773587564_img01.jpg)
+
+结果图片Image
+(https://lnt.xmu.edu.cn/api/uploads/10442655/in-rich-content?created_at=2026-03-07T10:54:32Z, 1773587564_img01(1).jpg)
+
+
+
+编程语言：Python + OpenCV
+
+提交内容：源代码、结果图像、实验报告
+
+附件名大小版权许可 
+编程作业1
+.zip
+(https://lnt.xmu.edu.cn/api/uploads/reference/6238185/blob)
+ 
+5.33 MB
+-->
 # Report 1
 ## Requirements
 - Description: For a given set of noisy images, automatically detect the targets in the images using image enhancement and processing techniques, and output the number of targets along with their corresponding locations.

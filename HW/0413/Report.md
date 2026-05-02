@@ -1,3 +1,19 @@
+<!--
+编程作业3：人脸识别程序
+ 若学生多次提交作业，成绩计算请以评分规则为准
+作业内容我的作业
+是否计入总成绩 是（成绩类别 : 平时成绩）公布成绩时间 马上公布活动时间 结束于2026.04.25 23:59作业形式 个人作业计分规则 最高得分完成指标 提交作业
+评分方式
+(
+教师评阅 100.0%
+)
+ 教师评阅占成绩比例 100.0%
+作业说明
+完成一个人脸识别的程序，可以识别你宿舍的几位同学
+人脸检测
+人脸特征提取与比对
+提交形式: Python代码 + 报告
+-->
 # Report 3
 ## Requirements
 - Implement a complete face recognition program that can identify several dormitory classmates

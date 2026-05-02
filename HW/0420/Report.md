@@ -1,3 +1,18 @@
+<!--
+编程作业4：CIFAR-10分类
+ 若学生多次提交作业，成绩计算请以评分规则为准
+作业内容我的作业
+是否计入总成绩 是（成绩类别 : 平时成绩）公布成绩时间 马上公布活动时间 结束于2026.05.08 23:59作业形式 个人作业计分规则 最高得分完成指标 提交作业
+评分方式
+(
+教师评阅 100.0%
+)
+ 教师评阅占成绩比例 100.0%
+作业说明
+采用PyTorch深度学习框架，分别构建一个多层全连接神经网络、一个卷积神经网络实现CIFAR-10数据的分类
+手动计算模型每一层输入、输出大小、相应的参数量；torchsummary给出的结果进行对比
+对比两种网络模型的准确率，并给出测试集的混淆矩阵
+-->
 # Report 4
 ## Requirements
 - Use the PyTorch deep learning framework to build a multi-layer fully connected neural network and a convolutional neural network for classifying CIFAR-10 data
