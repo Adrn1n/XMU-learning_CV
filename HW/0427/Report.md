@@ -206,7 +206,7 @@ class MLRunner:
                 print(f"Epoch {ep+1}/{epochs}, Loss: {ls[-1]:.6f}")
             if is_train:
                 if save_dir is not None and (
-                    (len(ls) <= MAX_MODEL_SAVE)
+                    (epochs <= MAX_MODEL_SAVE)
                     or ((ep + 1) % (epochs // MAX_MODEL_SAVE) == 0)
                 ):
                     torch.save(
