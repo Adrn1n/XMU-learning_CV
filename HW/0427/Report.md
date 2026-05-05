@@ -78,6 +78,13 @@ graph TD
 - `IMG_PATH`: The directory to save the images (loss curves, confusion matrices)
 
 ### Features
+- The device is automatically selected based on availability, with a fallback to CPU.
+- If the number of epochs is less than or equal to `MAX_EPOCHS_PRINT`, the loss will be printed for every epoch. Otherwise, the loss will be printed for every `epochs // MAX_EPOCHS_PRINT` epochs. The same logic applies to model saving.
+- If multiple classes have the same maximum output value during prediction, one of them will be randomly selected as the predicted class to avoid bias.
+- The score of `ClassificationRunner` is calculated as the number of correct predictions, which can be used to compute accuracy.
+- The `mean` and `std` are computed from the original training subset, but the transforms applied is the same as the one used for validation, different from the one used for training (random resized crop and horizontal flip)
+- If the `save_path` is not provided for plotting functions, the plots will be displayed instead of saved.
+- Because crop is applied (whether random for training or center for validation and mean/std computation), so the "real" label of that cropped image may be different from the original one.
 
 ## Code
 ```python
