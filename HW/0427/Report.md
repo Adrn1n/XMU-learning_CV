@@ -32,8 +32,50 @@ Following the reference, this work builds a unified PyTorch pipeline for scene c
 Two fine-tuning strategies are compared under the same training and evaluation framework. In the first setting, the entire ResNet-50 model is fine-tuned end-to-end. In the second setting, only the final fully connected layer is trainable, so the pretrained backbone is kept frozen and the classifier is replaced to match the 15 scene categories. Both models use the same loss function, optimizer, and learning-rate scheduler, and their training curves are recorded for comparison. After training, the models are evaluated on the test set, where predictions are converted to class labels and used to compute accuracy and draw the confusion matrix for a more detailed comparison of class-wise performance.
 
 ### Overview
+```mermaid
+graph TD
+    subgraph Data Preparation
+        A["Dataset"] --> |"giving ratio, random split"| B["Train & Val split"]
+        A --> E["Train & Val Datasets"]
+        B --> |"get indices"| E
+        B --> |"take Train split"| C["Mean & Std"]
+        C --> |"augmentation & normalization"| D["Transformers"]
+        D --> E
+    end
+    subgraph Model Building
+        F["Pretrained ResNet-50"] --> |"modify fully connected layer"| G["2 Models"]
+    end
+    subgraph Training & Evaluation
+        E --> |"take Train"| H["Trained Models"]
+        E --> |"take Val"| I["Predictions"]
+        G --> |"run with same settings"| H
+        H --> |"evaluate"| I
+        H --> |"generate loss curves"| J["Loss Curves"]
+        I --> |"generate confusion matrix"| J["Results"]
+    end
+
+```
 
 ### Parameters
+- `DEVICE`: The device to run the model on
+- `MAX_EPOCHS_PRINT`: The maximum number of epochs to print during training/evaluation
+- `MAX_MODEL_SAVE`: The maximum number of models to save during training
+- `SEED`: The random seed for reproducibility
+- `RUNNER`: The classification runner instance
+- `MODEL_DIR`: The directory to save the models
+- `MODEL_PARAMS`: The parameters for the ResNet-50 model
+- `CLS_NAMES`: The class names of the dataset
+- `CM_TEXT_TH_F`: The threshold factor for text color in the confusion matrix plot
+- `CRITERION`: The loss function for training
+- `TRAIN_SET`, `VAL_SET`: The training and validation datasets
+- `BATCH_SIZE`: The batch size for training and evaluation
+- `OPT`: The optimizer class to use for training
+- `OPT_PARAMS`: The parameters for the optimizer
+- `OUTPATH`: The directory to save the outputs (models, images)
+- `SCHEDULER`: The learning rate scheduler class to use for training
+- `EPOCHS`: The number of epochs to train the model
+- `SCHE_PARAMS`: The parameters for the learning rate scheduler
+- `IMG_PATH`: The directory to save the images (loss curves, confusion matrices)
 
 ### Features
 
