@@ -85,6 +85,8 @@ graph TD
 - The `mean` and `std` are computed from the original training subset, but the transforms applied is the same as the one used for validation, different from the one used for training (random resized crop and horizontal flip)
 - If the `save_path` is not provided for plotting functions, the plots will be displayed instead of saved.
 - Because crop is applied (whether random for training or center for validation and mean/std computation), so the "real" label of that cropped image may be different from the original one.
+- `MODEL_DIR` and `IMG_PATH` are not the directory to save the models and images, but the subdirectory under `OUTPATH` to save the models and images. But the `MODEL_DIR` is the direct path for pytorch hub to save the pretrained model.
+- The saved model files are organized by the name of the model (a directory for each model) and the epoch number.
 
 ## Code
 ```python
