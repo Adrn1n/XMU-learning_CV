@@ -27,6 +27,9 @@ Use fine-tuning to complete image classification
 
 ## Implementation
 ### Methodology
+Following the reference, this work builds a unified PyTorch pipeline for scene classification with a pretrained ResNet-50 model. The dataset is randomly split into two equal parts for training and testing with a fixed seed to ensure reproducibility. To improve training stability, the mean and standard deviation are computed from the training subset and used for normalization. The training set applies data augmentation such as random resized cropping and horizontal flipping, while the test set uses deterministic resize and center crop preprocessing.
+
+Two fine-tuning strategies are compared under the same training and evaluation framework. In the first setting, the entire ResNet-50 model is fine-tuned end-to-end. In the second setting, only the final fully connected layer is trainable, so the pretrained backbone is kept frozen and the classifier is replaced to match the 15 scene categories. Both models use the same loss function, optimizer, and learning-rate scheduler, and their training curves are recorded for comparison. After training, the models are evaluated on the test set, where predictions are converted to class labels and used to compute accuracy and draw the confusion matrix for a more detailed comparison of class-wise performance.
 
 ### Overview
 
